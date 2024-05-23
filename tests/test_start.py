@@ -1,115 +1,93 @@
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.wait import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
+from pages.main_page import MainPage
+from pages.register_page import RegisterPage
+from pages.admin_page import AdminPage
+from pages.admin.catalog.products_page import ProductsPage
+from pages.admin.catalog.add_new_product_page import AddNewProductPage
+from components.currency_switcher import CurrencySwitcher
+from components.alert_element import AlertElement
 
 
-def test_main_page(browser):
-    browser.get(browser.url)
-    wait = WebDriverWait(browser, 2)
-    wait.until(EC.title_is("Your Store"), "За время ожидания не найден корректный title страницы")
-    wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, "#logo")))
-    wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, "#form-currency")))
-    wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, ".carousel")))
-    wait.until(EC.text_to_be_present_in_element((By.XPATH, '//*[@id="content"]/h3'), "Featured"))
+def test_admin_login(browser):
+    admin_page = AdminPage(browser)
+
+    admin_page.open()
+    admin_page.enter_username("admin")
+    admin_page.enter_password("admin")
+    admin_page.submit_form()
+    assert admin_page.logout_link_is_present()
+
+    admin_page.logout()
+    assert admin_page.login_button_is_present()
 
 
-def test_admin_page(browser):
-    browser.get(browser.url + "/administration")
-    wait = WebDriverWait(browser, 2)
-    wait.until(EC.title_is("Administration"), "За время ожидания не найден корректный title страницы")
-    wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, "#header")))
-    wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, "#content")))
-    wait.until(EC.visibility_of_element_located((By.NAME, "username")))
-    wait.until(EC.visibility_of_element_located((By.NAME, "password")))
-    wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, "#footer")))
-    wait.until(EC.visibility_of_element_located((By.LINK_TEXT, "OpenCart")))
+def test_register_user(browser):
+    register_page = RegisterPage(browser)
+
+    register_page.open()
+    register_page.enter_firstname("Name")
+    register_page.enter_lastname("Lastname")
+    register_page.enter_email("mail@mail.mail")
+    register_page.enter_password("test")
+    register_page.mark_policy_checkbox()
+    register_page.submit_form()
+    assert register_page.logout_link_is_present()
 
 
-def test_register_page(browser):
-    browser.get(browser.url + "/index.php?route=account/register")
-    wait = WebDriverWait(browser, 2)
-    wait.until(EC.title_is("Register Account"), "За время ожидания не найден корректный title страницы")
-    wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, "#form-register")))
-    wait.until(EC.visibility_of_element_located((By.NAME, "firstname")))
-    wait.until(EC.visibility_of_element_located((By.NAME, "lastname")))
-    wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, ".form-check")))
-    wait.until(EC.visibility_of_element_located((By.XPATH, '//*[@id="form-register"]/div/button')))
+def test_change_currency(browser):
+    main_page = MainPage(browser)
+    currency_element = CurrencySwitcher(browser)
+
+    main_page.open()
+
+    currency_element.switch_to_usd()
+    assert currency_element.current_currency == "$"
+
+    currency_element.switch_to_euro()
+    assert currency_element.current_currency == "€"
+
+    currency_element.switch_to_gbp()
+    assert currency_element.current_currency == "£"
 
 
-def test_catalog_page(browser):
-    browser.get(browser.url + "/index.php?route=product/category&language=en-gb&path=25_28")
-    wait = WebDriverWait(browser, 2)
-    wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, "#product-category")))
-    wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, ".breadcrumb")))
-    wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, "#content")))
-    wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, "#display-control")))
-    wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, "#product-list")))
+def test_add_new_product(browser):
+    admin_page = AdminPage(browser)
+    products_page = ProductsPage(browser)
+    add_new_product_page = AddNewProductPage(browser)
+    alert_element = AlertElement(browser)
+
+    admin_page.open()
+    admin_page.enter_username("admin")
+    admin_page.enter_password("admin")
+    admin_page.submit_form()
+    admin_page.navigate_to_catalog_products()
+
+    products_page.add_new_product_link_click()
+
+    add_new_product_page.enter_product_name("test product")
+    add_new_product_page.enter_description("test description")
+    add_new_product_page.enter_meta_tag_title("test meta tag title")
+    add_new_product_page.open_data_tab()
+    add_new_product_page.enter_model("test model")
+    add_new_product_page.open_seo_tab()
+    add_new_product_page.enter_seo_keywords("seo-keywords")
+    add_new_product_page.submit_form()
+
+    assert alert_element.success_alert_is_present()
 
 
-def test_product_page(browser):
-    browser.get(browser.url + "/index.php?route=product/product&language=en-gb&product_id=42&path=25_28")
-    wait = WebDriverWait(browser, 2)
-    wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, "#product-info")))
-    wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, "#content")))
-    wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, "#button-cart")))
-    wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, ".rating")))
-    wait.until(EC.visibility_of_element_located((By.LINK_TEXT, "Description")))
-    wait.until(EC.visibility_of_element_located((By.LINK_TEXT, "Specification")))
-    wait.until(EC.visibility_of_element_located((By.PARTIAL_LINK_TEXT, "Reviews")))
+def test_delete_random_product(browser):
+    admin_page = AdminPage(browser)
+    products_page = ProductsPage(browser)
+    alert_element = AlertElement(browser)
 
+    admin_page.open()
+    admin_page.enter_username("admin")
+    admin_page.enter_password("admin")
+    admin_page.submit_form()
+    admin_page.navigate_to_catalog_products()
 
-def test_add_to_cart(browser):
-    browser.get(browser.url)
-    wait = WebDriverWait(browser, 3)
-    # Получаем название товара
-    product = wait.until(EC.visibility_of_all_elements_located((By.XPATH, '//*[@class="product-thumb"]')))[1]
-    product_name = product.find_element(By.XPATH, 'div[2]/div/h4/a').text
-    # Добавляем товар в корзину
-    product.find_element(By.XPATH, 'div[2]/form/div/button[1]').click()
-    # Проверяем сообщение об успехе
-    wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, ".alert-success")))
-    # Ждем обновление корзины
-    wait.until(EC.staleness_of(browser.find_element(By.XPATH, '//*[@id="header-cart"]/div/button')))
-    # Открываем корзину
-    cart = wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, "#header-cart")))
-    cart.find_element(By.XPATH, 'div/button').click()
-    # Проверяем наличие товара в корзине
-    cart.find_element(By.LINK_TEXT, product_name)
+    products_page.select_random_product()
+    products_page.delete_product_button_submit()
+    products_page.delete_product_alert_accept()
 
-
-def test_main_change_currency(browser):
-    browser.get(browser.url)
-    wait = WebDriverWait(browser, 2)
-    # Получаем стоимость товара в старой валюте
-    old_price = browser.find_element(By.CSS_SELECTOR, ".price-new").text
-    # Изменяем валюту
-    browser.find_element(By.CSS_SELECTOR, "#form-currency").click()
-    wait.until(EC.element_to_be_clickable((By.PARTIAL_LINK_TEXT, "Euro"))).click()
-    # Получаем стоимость товара в новой валюте
-    new_price = browser.find_element(By.CSS_SELECTOR, ".price-new").text
-    assert old_price != new_price
-
-
-def test_catalog_change_currency(browser):
-    browser.get(browser.url + "/index.php?route=product/category&language=en-gb&path=25_28")
-    wait = WebDriverWait(browser, 2)
-    # Получаем стоимость товара в старой валюте
-    old_price = browser.find_element(By.CSS_SELECTOR, ".price-new").text
-    # Изменяем валюту
-    browser.find_element(By.CSS_SELECTOR, "#form-currency").click()
-    wait.until(EC.element_to_be_clickable((By.PARTIAL_LINK_TEXT, "Euro"))).click()
-    # Получаем стоимость товара в новой валюте
-    new_price = browser.find_element(By.CSS_SELECTOR, ".price-new").text
-    assert old_price != new_price
-
-
-def test_login(browser):
-    browser.get(browser.url + "/administration")
-    # Выполняем логин
-    browser.find_element(By.NAME, "username").send_keys("admin")
-    browser.find_element(By.NAME, "password").send_keys("admin")
-    browser.find_element(By.CSS_SELECTOR, ".btn").click()
-    # Выполняем логаут
-    logout_btn = WebDriverWait(browser, 3).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "#nav-logout")))
-    logout_btn.click()
-
+    assert alert_element.success_alert_is_present()
