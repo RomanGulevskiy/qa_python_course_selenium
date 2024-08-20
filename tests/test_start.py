@@ -16,8 +16,8 @@ def test_admin_login(browser):
     admin_page = AdminPage(browser)
 
     admin_page.open()
-    admin_page.enter_username("admin")
-    admin_page.enter_password("admin")
+    admin_page.enter_username("user")
+    admin_page.enter_password("bitnami")
     admin_page.submit_form()
     assert admin_page.logout_link_is_present()
 
@@ -67,8 +67,8 @@ def test_add_new_product(browser):
     seo_keywords = "".join(random.choice(string.ascii_letters) for _ in range(10))
 
     admin_page.open()
-    admin_page.enter_username("admin")
-    admin_page.enter_password("admin")
+    admin_page.enter_username("user")
+    admin_page.enter_password("bitnami")
     admin_page.submit_form()
     admin_page.navigate_to_catalog_products()
 
@@ -92,8 +92,8 @@ def test_delete_random_product(browser):
     alert_element = AlertElement(browser)
 
     admin_page.open()
-    admin_page.enter_username("admin")
-    admin_page.enter_password("admin")
+    admin_page.enter_username("user")
+    admin_page.enter_password("bitnami")
     admin_page.submit_form()
     admin_page.navigate_to_catalog_products()
 
