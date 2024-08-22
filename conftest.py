@@ -56,17 +56,17 @@ def browser(request):
 
         caps = {
             "browserName": browser_name,
-            # "browserVersion": version,
-            # "selenoid:options": {
-            #     "enableVNC": vnc,
-            #     "name": request.node.name,
-            #     "screenResolution": "1280x2000",
-            #     "enableVideo": video,
-            #     "enableLog": logs,
-            #     "timeZone": "Europe/Moscow",
-            #     "env": ["LANG=ru_RU.UTF-8", "LANGUAGE=ru:en", "LC_ALL=ru_RU.UTF-8"]
-            # },
-            # "acceptInsecureCerts": True,
+            "browserVersion": '125.0',
+            "selenoid:options": {
+                "enableVNC": True,
+                "name": request.node.name,
+                "screenResolution": "1920x1080",
+                "enableVideo": False,
+                "enableLog": False,
+                "timeZone": "Europe/Moscow",
+                "env": ["LANG=ru_RU.UTF-8", "LANGUAGE=ru:en", "LC_ALL=ru_RU.UTF-8"]
+            },
+            "acceptInsecureCerts": True,
         }
 
         for k, v in caps.items():
