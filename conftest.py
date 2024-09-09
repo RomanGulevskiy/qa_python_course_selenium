@@ -13,7 +13,7 @@ from selenium.webdriver.firefox.options import Options as FFOptions
 def pytest_addoption(parser):
     parser.addoption("--browser", "-B", default="chrome", choices=["chrome", "firefox"]),
     parser.addoption("--headless", "-H", action="store_true"),
-    parser.addoption("--url", "-U", default="http://opencart.local")
+    parser.addoption("--url", "-U", default="http://opencart:8080")
     parser.addoption("--executor", "-E"),
     parser.addoption("--log_level", "-L", default="INFO")
 
@@ -56,7 +56,7 @@ def browser(request):
 
         caps = {
             "browserName": browser_name,
-            "browserVersion": '125.0',
+            "browserVersion": '126.0',
             "selenoid:options": {
                 "enableVNC": True,
                 "name": request.node.name,
